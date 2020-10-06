@@ -6,14 +6,14 @@
       w="100vw"
       h="100vh"
       flex-dir="column"
-      align="center"
+      align-items="center"
       justify-content="center"
     >
       <div id="particles"></div>
       <c-heading id="typed-text" as="h1" display="none" h="60px"
         ><span>dom bavetta</span></c-heading
       >
-      <c-heading as="h1" text-align="center" mb="8" font-size="5xl">
+      <c-heading as="h1" text-align="center" mb="8" pb="4" font-size="5xl">
         <span id="dombavetta"></span>
       </c-heading>
       <!-- <c-heading as="h2" font-size="lg" text-align="center" mb="4">
@@ -45,9 +45,9 @@
           />
         </c-box>
       </c-stack>
-      <c-heading as="h2" text-align="center" mt="8" font-size="2xl">
+      <!-- <c-heading as="h2" text-align="center" mt="8" font-size="2xl">
         Full stack web developer
-      </c-heading>
+      </c-heading> -->
     </c-box>
   </div>
 </template>
@@ -93,8 +93,7 @@ export default defineComponent({
 
       typed.start();
 
-      tsParticles.load('particles', {
-        /* options here */
+      await tsParticles.load('particles', {
         fpsLimit: 60,
         particles: {
           number: {
@@ -176,16 +175,19 @@ export default defineComponent({
 </script>
 
 <style lang="css" scoped>
-/* @import url('https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,400;0,500;1,300&display=swap'); */
 #particles {
   position: absolute;
   width: 100%;
   height: 100%;
+  animation-name: fade;
+  animation-duration: 1s;
+  animation-timing-function: ease-in;
+  animation-direction: normal;
+  animation-fill-mode: both;
 }
 
 canvas {
   display: block;
-  vertical-align: bottom;
 }
 
 h1,
@@ -194,6 +196,27 @@ h2 {
   font-weight: 400;
   font-style: italic;
   margin-left: 18px;
+}
+
+h1 {
+  /* padding-bottom: 4px; */
+  background: /* gradient can be an image */ linear-gradient(
+      to left,
+      rgba(128, 255, 114, 0.5) 0%,
+      rgba(126, 232, 250, 0.5) 100%
+    )
+    left bottom transparent no-repeat;
+  background-size: 100% 2px; /* if linear-gradient, we need to resize it */
+}
+
+h2 {
+  /* color: #c97790; */
+  animation-name: fade;
+  animation-duration: 1s;
+  animation-delay: 1s;
+  animation-timing-function: ease-in;
+  animation-direction: normal;
+  animation-fill-mode: both;
 }
 
 .dev-logo {
@@ -230,6 +253,15 @@ h2 {
   to {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 </style>
