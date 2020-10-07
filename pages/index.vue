@@ -1,59 +1,78 @@
 <template>
-  <div class="container">
-    <c-box
-      v-bind="mainStyles[colorMode]"
-      d="flex"
-      w="100vw"
-      h="100vh"
-      flex-dir="column"
-      align-items="center"
-      justify-content="center"
+  <c-box
+    v-bind="mainStyles[colorMode]"
+    d="flex"
+    w="100vw"
+    h="100vh"
+    flex-dir="column"
+    align-items="center"
+    justify-content="center"
+  >
+    <div id="particles" />
+    <c-heading id="typed-text" as="h1" display="none" h="60px"
+      ><span>dom bavetta</span></c-heading
     >
-      <div id="particles"></div>
-      <c-heading id="typed-text" as="h1" display="none" h="60px"
-        ><span>dom bavetta</span></c-heading
+    <c-box id="content">
+      <c-heading
+        ref="heading"
+        as="h1"
+        text-align="center"
+        mb="8"
+        pb="4"
+        font-size="5xl"
+        class="underline"
+        aria-hidden="true"
       >
-      <c-heading as="h1" text-align="center" mb="8" pb="4" font-size="5xl">
         <span id="dombavetta"></span>
       </c-heading>
-      <!-- <c-heading as="h2" font-size="lg" text-align="center" mb="4">
-        *coming soon*
-      </c-heading> -->
-      <c-stack direction="row" spacing="8" align="center" justify="center">
-        <c-box class="dev-logo-container">
+      <c-stack
+        id="dev-tooling"
+        direction="row"
+        spacing="8"
+        align="center"
+        justify="center"
+      >
+        <c-box
+          id="dotnet"
+          ref="dotnetImg"
+          class="dev-logo"
+          @mouseenter="ondevtoolMouseEnter('dotnet')"
+          @mouseleave="ondevtoolMouseLeave()"
+        >
           <img
-            id="dotnet"
             src="~/assets/images/logos/net_core_logo.svg"
             alt="Dotnet Core logo"
-            class="dev-logo"
           />
         </c-box>
-        <c-box class="dev-logo-container">
+        <c-box
+          id="vue"
+          ref="vueImg"
+          class="dev-logo"
+          @mouseenter="ondevtoolMouseEnter('vue')"
+          @mouseleave="ondevtoolMouseLeave()"
+        >
           <img
-            id="vue"
             src="~/assets/images/logos/vue_logo.svg"
             alt="Vue.Js core logo"
-            class="dev-logo"
           />
         </c-box>
-        <c-box class="dev-logo-container">
-          <img
-            id="ts"
-            src="~/assets/images/logos/ts_logo.svg"
-            alt="Typescript logo"
-            class="dev-logo"
-          />
+        <c-box
+          id="ts"
+          ref="tsImg"
+          class="dev-logo"
+          @mouseenter="ondevtoolMouseEnter('ts')"
+          @mouseleave="ondevtoolMouseLeave()"
+        >
+          <img src="~/assets/images/logos/ts_logo.svg" alt="Typescript logo" />
         </c-box>
       </c-stack>
-      <!-- <c-heading as="h2" text-align="center" mt="8" font-size="2xl">
-        Full stack web developer
-      </c-heading> -->
     </c-box>
-  </div>
+  </c-box>
 </template>
 
 <script lang="ts">
-import { tsParticles } from 'tsparticles';
+import { Container, RecursivePartial, tsParticles } from 'tsparticles';
+import { IShape } from 'tsparticles/dist/Options/Interfaces/Particles/Shape/IShape';
 import Typed from 'typed.js';
 import {
   computed,
@@ -62,6 +81,7 @@ import {
   ref,
 } from '@nuxtjs/composition-api';
 import { useColorMode } from '~/app/composables/color-mode.ts';
+import { sleep } from '~/app/utils/async';
 
 export default defineComponent({
   name: 'HomePage',
@@ -83,17 +103,97 @@ export default defineComponent({
 
     const { colorMode, toggleColorMode } = useColorMode();
 
+    const heading = ref<Vue>();
+    const dotnetImg = ref<HTMLDivElement>();
+    const vueImg = ref<HTMLDivElement>();
+    const tsImg = ref<HTMLDivElement>();
+
+    const tempalteRefs = {
+      heading,
+      dotnetImg,
+      vueImg,
+      tsImg,
+    };
+
+    const particlesRef = ref<Container>();
+
+    const baseShapes: RecursivePartial<IShape> = {
+      type: 'image',
+      images: [
+        {
+          src: '/logos/vue_logo.svg',
+        },
+        {
+          src: '/logos/net_core_logo.svg',
+        },
+        {
+          src: '/logos/ts_logo.svg',
+        },
+      ],
+    };
+
+    const ondevtoolMouseEnter = (tool: 'dotnet' | 'vue' | 'ts') => {
+      if (!particlesRef.value) return;
+
+      const dotnetShapes: RecursivePartial<IShape> = {
+        type: 'image',
+        image: { src: '/logos/net_core_logo.svg' },
+      };
+
+      const vueShapes: RecursivePartial<IShape> = {
+        type: 'image',
+        image: { src: '/logos/vue_logo.svg' },
+      };
+
+      const tsShapes: RecursivePartial<IShape> = {
+        type: 'image',
+        image: { src: '/logos/ts_logo.svg' },
+      };
+
+      if (tool === 'dotnet')
+        particlesRef.value.options.particles.shape.load(dotnetShapes);
+
+      if (tool === 'vue')
+        particlesRef.value.options.particles.shape.load(vueShapes);
+
+      if (tool === 'ts')
+        particlesRef.value.options.particles.shape.load(tsShapes);
+
+      console.log('using ', tool);
+      particlesRef.value.refresh();
+    };
+
+    const ondevtoolMouseLeave = () => {
+      if (!particlesRef.value) return;
+      particlesRef.value.options.particles.shape.load(baseShapes);
+      particlesRef.value.refresh();
+    };
+
     onMounted(async () => {
       await root.$nextTick();
       const typed = new Typed('#dombavetta', {
         stringsElement: '#typed-text',
         typeSpeed: 75,
         startDelay: 500,
+        onComplete: async () => {
+          const headingEl = heading.value?.$el;
+          const cursorEl = headingEl?.querySelector('.typed-cursor');
+
+          if (headingEl && cursorEl) {
+            const cursor = cursorEl as HTMLElement;
+            cursor.style.transition = 'opacity 0.2s ease';
+            cursor.style.animation = 'none';
+            cursor.style.opacity = '0';
+
+            await sleep(200);
+            headingEl.removeChild(cursorEl);
+          }
+        },
       });
 
       typed.start();
 
-      await tsParticles.load('particles', {
+      const particles = await tsParticles.load('particles', {
         fpsLimit: 60,
         particles: {
           number: {
@@ -103,20 +203,7 @@ export default defineComponent({
               value_area: 800,
             },
           },
-          shape: {
-            type: 'image',
-            images: [
-              {
-                src: '/logos/vue_logo.svg',
-              },
-              {
-                src: '/logos/net_core_logo.svg',
-              },
-              {
-                src: '/logos/ts_logo.svg',
-              },
-            ],
-          },
+          shape: baseShapes,
           opacity: {
             value: 0.7,
           },
@@ -162,19 +249,24 @@ export default defineComponent({
         },
         retina_detect: true,
       });
+
+      particlesRef.value = particles;
     });
 
     return {
+      ...tempalteRefs,
       showModal,
       mainStyles,
       colorMode: computed(() => colorMode()),
       toggleColorMode: computed(() => toggleColorMode()),
+      ondevtoolMouseEnter,
+      ondevtoolMouseLeave,
     };
   },
 });
 </script>
 
-<style lang="css" scoped>
+<style lang="scss" scoped>
 #particles {
   position: absolute;
   width: 100%;
@@ -184,65 +276,90 @@ export default defineComponent({
   animation-timing-function: ease-in;
   animation-direction: normal;
   animation-fill-mode: both;
+
+  canvas {
+    display: block;
+  }
 }
 
-canvas {
-  display: block;
-}
+#content {
+  position: relative;
+  padding-bottom: 80px;
 
-h1,
-h2 {
-  font-family: basic-sans, sans-serif;
-  font-weight: 400;
-  font-style: italic;
-  margin-left: 18px;
-}
+  h1 {
+    font-family: basic-sans, sans-serif;
+    font-weight: 400;
+    font-style: italic;
 
-h1 {
-  /* padding-bottom: 4px; */
-  background: /* gradient can be an image */ linear-gradient(
-      to left,
-      rgba(128, 255, 114, 0.5) 0%,
-      rgba(126, 232, 250, 0.5) 100%
-    )
-    left bottom transparent no-repeat;
-  background-size: 100% 2px; /* if linear-gradient, we need to resize it */
-}
+    &.underline {
+      background: linear-gradient(
+          to left,
+          rgba(128, 255, 114, 0.5) 0%,
+          rgba(126, 232, 250, 0.5) 100%
+        )
+        left bottom transparent no-repeat;
+      background-size: 100% 2px; /* if linear-gradient, we need to resize it */
+    }
+  }
 
-h2 {
-  /* color: #c97790; */
-  animation-name: fade;
-  animation-duration: 1s;
-  animation-delay: 1s;
-  animation-timing-function: ease-in;
-  animation-direction: normal;
-  animation-fill-mode: both;
-}
+  #dev-tooling {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+  }
 
-.dev-logo {
-  transition: 0.2s ease;
-  width: 40px;
-  height: auto;
-  animation-name: pop;
-  animation-duration: 0.15s;
-  animation-timing-function: cubic-bezier(0.64, 0.57, 0.67, 1.75);
-  animation-direction: normal;
-  animation-fill-mode: both;
-  will-change: transform;
-}
+  .dev-logo {
+    transition: 0.15s ease;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: saturate(150%) blur(5px);
+    border-radius: 5px;
 
-.dev-logo-container {
-  perspective: 40px;
-}
+    img {
+      transition: 0.2s ease;
+      min-width: 35px;
+      min-height: 35px;
+      animation-name: pop;
+      animation-duration: 0.15s;
+      animation-timing-function: cubic-bezier(0.64, 0.57, 0.67, 1.75);
+      animation-direction: normal;
+      animation-fill-mode: both;
+      will-change: transform;
+    }
 
-.dev-logo#dotnet {
-  animation-delay: 1.5s;
-}
-.dev-logo#vue {
-  animation-delay: 1.6s;
-}
-.dev-logo#ts {
-  animation-delay: 1.7s;
+    &#dotnet {
+      &:hover {
+        box-shadow: 0 0 0 4px rgba(#5c2d91, 0.8);
+      }
+
+      img {
+        animation-delay: 1.5s;
+      }
+    }
+
+    &#vue {
+      &:hover {
+        box-shadow: 0 0 0 4px rgba(#41b883, 0.8);
+      }
+
+      img {
+        animation-delay: 1.6s;
+      }
+    }
+
+    &#ts {
+      &:hover {
+        box-shadow: 0 0 0 4px rgba(#3178c6, 0.8);
+      }
+
+      img {
+        animation-delay: 1.7s;
+      }
+    }
+  }
 }
 
 @keyframes pop {

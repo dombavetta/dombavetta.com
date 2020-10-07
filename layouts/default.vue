@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div id="app-layout">
     <CThemeProvider>
       <CColorModeProvider>
         <CBox font-family="body" as="main">
@@ -19,3 +19,11 @@ export default defineComponent({
   },
 });
 </script>
+
+<style lang="scss" scoped>
+#default_layout {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+</style>
